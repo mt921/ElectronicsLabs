@@ -9,7 +9,12 @@ PWMA = Pin('X1')				# Control speed of motor A
 B1 = Pin('X7', Pin.OUT_PP)		# Control direction of motor B
 B2 = Pin('X8', Pin.OUT_PP)
 PWMB = Pin('X2')				# Control speed of motor B
-b_LED = LED(4)		
+b_LED = LED(4)					# Blue LED
+
+# Configure timer 2 to produce 1KHz clock for PWM control
+tim = Timer(2, freq = 1000)
+motorA = tim.channel (1, Timer.PWM, pin = PWMA)
+motorB = tim.channel (2, Timer.PWM, pin = PWMB)
 
 # I2C connected to Y9, Y10 (I2C bus 2) and Y11 is reset low active
 i2c = pyb.I2C(2, pyb.I2C.MASTER)
@@ -21,10 +26,40 @@ oled = OLED_938(
 oled.poweron()
 oled.init_display()
 
-# Configure timer 2 to produce 1KHz clock for PWM control
-tim = Timer(2, freq = 1000)
-motorA = tim.channel (1, Timer.PWM, pin = PWMA)
-motorB = tim.channel (2, Timer.PWM, pin = PWMB)
+class PIDC:
+    def __init__(self, Kp, Kd, Ki):
+        self.Kp = Kp
+        self.Kd = Kd
+        self.Ki = Ki
+        self.error_last = 0       # These are global variables to remember various states of controller
+        self.tic = pyb.millis()
+        self.error_sum = 0
+
+    def getPWM(self, target, speed):
+
+        # error input
+        error = target - speed                      # e[n]
+    
+        # derivative input
+        derivative = error - self.error_last        # error_dot. assume dt is constant
+                                                    # 1/dt is absorbed into Kd
+                                                    # this avoid division by small value
+
+        toc = pyb.millis()
+        dt = (toc-self.tic)*0.001                   # find dt as close to when used as possible
+        # Integral input 
+        self.error_sum += error*dt            
+ 
+        #   Output 
+        PID_output = (self.Kp * error) + (self.Ki * self.error_sum) + (self.Kd * derivative)
+
+        # Store previous values 
+        self.error_last = error
+        self.tic = toc
+
+        pwm_out = min(abs(PID_output), 100)         # Make sure pwm is less than 100 
+
+        return pwm_out
 
 def A_forward(value):
 	A1.low()
@@ -53,7 +88,7 @@ def B_back(value):
 def B_stop():
 	B1.high()
 	B2.high()
-
+	
 # Initialise variables
 pitch_speed = 0
 roll_speed = 0
@@ -98,38 +133,35 @@ speed_timer.callback(isr_speed_timer)
 
 #-------  END of Interrupt Section  ----------
 
+scale_1 = 5/9
 
-class PIDC:
-    def __init__(self, Kp, Kd, Ki):
-        self.Kp = Kp
-        self.Kd = Kd
-        self.Ki = Ki
-        self.error_last = 0       # These are global variables to remember various states of controller
-        self.tic = pyb.millis()
-        self.error_sum = 0
+tic = pyb.millis()	
+while True:					
+	toc = pyb.millis()
+	alpha = 0.7    # larger = longer time constant
+	pitch = int(imu.pitch())
+	roll = int(imu.roll())
 
-    def getPWM(self, target, speed):
+	pitch_speed = int(scale_1*pitch)
+	
+	pidc = PIDC(4.0,0.5,1.0)
+	new_pwm_A = pidc.getPWM(pitch_speed,A_speed)
+	new_pwm_B = pidc.getPWM(pitch_speed,B_speed)
 
-        # error input
-        error = target - speed                      # e[n]
-    
-        # derivative input
-        derivative = error - self.error_last        # error_dot. assume dt is constant
-                                                    # 1/dt is absorbed into Kd
-                                                    # this avoid division by small value
+	if (pitch_speed >= 0):
+		A_forward(new_pwm_A)
+		B_forward(new_pwm_B)
+	else:
+		A_back(abs(new_pwm_A))
+		B_back(abs(new_pwm_B))
 
-        toc = pyb.millis()
-        dt = (toc-self.tic)*0.001                   # find dt as close to when used as possible
-        # Integral input 
-        self.error_sum += error*dt            
- 
-        #   Output 
-        PID_output = (self.Kp * error) + (self.Ki * self.error_sum) + (self.Kd * derivative)
-
-        # Store previous values 
-        self.error_last = error
-        self.tic = toc
-
-        pwm_out = min(abs(PID_output), 100)         # Make sure pwm is less than 100 
-
-        return pwm_out
+	# Display new speed
+	oled.clear()
+	oled.draw_text(0,10,'Pitch Angle:{:5d}'.format(pitch))
+	oled.draw_text(0,20,'Roll Angle{:5d}'.format(roll))
+	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(A_speed/39))	
+	oled.draw_text(0,40,'Motor B rps:{:5.2f}'.format(B_speed/39))	
+	oled.display()
+	
+	pyb.delay(100)
+	tic = pyb.millis()
