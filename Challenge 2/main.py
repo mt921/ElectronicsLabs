@@ -111,7 +111,7 @@ while True:
 	#therefore this needs to be updated ^
 	pitch_speed = int(pitch)
 	roll_speed = int(roll)
-	if (pitch_speed >= 0) or (pitch_speed >= 0):		
+	if (pitch_speed >= 0) or (roll_speed >= 0):		
 		A_forward(pitch_speed)
 		B_forward(roll_speed)
 	else:
