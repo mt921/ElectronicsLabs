@@ -98,6 +98,8 @@ speed_timer.callback(isr_speed_timer)
 
 #-------  END of Interrupt Section  ----------
 
+scale_1 = 1
+
 tic = pyb.millis()	
 while True:			
 	toc = pyb.millis()
@@ -106,16 +108,20 @@ while True:
 	roll = int(imu.roll())
 	
 	if pitch > 0:
-		pitch_speed = int((pitch-90)*200/180)
+		pitch_speed = int(scale_1*((pitch-90)*200/180))
+        # pitch_speed = int(pitch)
 	elif pitch < 0:
-		pitch_speed = int((pitch+90)*200/180)
+		pitch_speed = int(scale_1*((pitch+90)*200/180))
+        # pitch_speed = int(pitch)
 	elif pitch == 0:
 		pitch_speed = 0
 	
 	if roll > 0:
-		roll_speed = int((roll-90)*200/180)
+		roll_speed = int(scale_1*((roll-90)*200/180))
+        # roll_speed = int(roll)
 	elif roll < 0:
-		roll_speed = int((roll+90)*200/180)
+		roll_speed = int(scale_1*((roll+90)*200/180))
+        # roll_speed = int(roll)
 	elif roll == 0:
 		roll_speed = 0
 	
@@ -130,8 +136,8 @@ while True:
 	oled.clear()
 	oled.draw_text(0,10,'Pitch Angle:{:5d}'.format(pitch))
 	oled.draw_text(0,20,'Roll Angle{:5d}'.format(roll))
-	oled.draw_text(0,30,'Motor A drive:{:5.2f}%'.format(A_speed))	
-	oled.draw_text(0,40,'Motor B drive:{:5.2f}%'.format(B_speed))	
+	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(A_speed/39))	
+	oled.draw_text(0,40,'Motor B rps:{:5.2f}'.format(B_speed/39))	
 	oled.display()
 	
 	pyb.delay(100)
