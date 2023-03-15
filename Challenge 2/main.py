@@ -105,12 +105,20 @@ while True:
 	pitch = int(imu.pitch())
 	roll = int(imu.roll())
 	
-	#maximum speed will be at 180, which should correspond to 100% motor drive
-	#update code so that pitch & roll angles map correctly to percentage motor drive 
-	#because the mapping is not correct, the motors will not spin for negative angle values
-	#therefore this needs to be updated ^
-	pitch_speed = int(pitch)
-	roll_speed = int(roll)
+	if pitch > 0:
+		pitch_speed = int((pitch-90)*200/180)
+	elif pitch < 0:
+		pitch_speed = int((pitch+90)*200/180)
+	elif pitch == 0:
+		pitch_speed = 0
+	
+	if roll > 0:
+		roll_speed = int((roll-90)*200/180)
+	elif roll < 0:
+		roll_speed = int((roll+90)*200/180)
+	elif roll == 0:
+		roll_speed = 0
+	
 	if (pitch_speed >= 0) or (roll_speed >= 0):		
 		A_forward(pitch_speed)
 		B_forward(roll_speed)
