@@ -108,7 +108,7 @@ while True:
 	roll = int(imu.roll())
 	
 	pitch_speed = int(scale_1*pitch)
-	roll_speed = int(scale_1*pitch)
+	roll_speed = int(scale_1*roll)
 	
     if (pitch_speed >= 0) or (roll_speed >= 0):
 		A_forward(pitch_speed)
