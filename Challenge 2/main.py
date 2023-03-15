@@ -98,7 +98,7 @@ speed_timer.callback(isr_speed_timer)
 
 #-------  END of Interrupt Section  ----------
 
-scale_1 = 1
+scale_1 = 5/9
 
 tic = pyb.millis()	
 while True:			
@@ -107,25 +107,10 @@ while True:
 	pitch = int(imu.pitch())
 	roll = int(imu.roll())
 	
-	if pitch > 0:
-		pitch_speed = int(scale_1*((pitch-90)*200/180))
-        # pitch_speed = int(pitch)
-	elif pitch < 0:
-		pitch_speed = int(scale_1*((pitch+90)*200/180))
-        # pitch_speed = int(pitch)
-	elif pitch == 0:
-		pitch_speed = 0
+	pitch_speed = int(scale_1*pitch)
+	roll_speed = int(scale_1*pitch)
 	
-	if roll > 0:
-		roll_speed = int(scale_1*((roll-90)*200/180))
-        # roll_speed = int(roll)
-	elif roll < 0:
-		roll_speed = int(scale_1*((roll+90)*200/180))
-        # roll_speed = int(roll)
-	elif roll == 0:
-		roll_speed = 0
-	
-	if (pitch_speed >= 0) or (roll_speed >= 0):		
+    if (pitch_speed >= 0) or (roll_speed >= 0):
 		A_forward(pitch_speed)
 		B_forward(roll_speed)
 	else:
