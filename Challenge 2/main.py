@@ -101,7 +101,7 @@ speed_timer.callback(isr_speed_timer)
 scale_1 = 5/9
 
 tic = pyb.millis()	
-while True:			
+while True:					
 	toc = pyb.millis()
 	alpha = 0.7    # larger = longer time constant
 	pitch = int(imu.pitch())
@@ -110,7 +110,7 @@ while True:
 	pitch_speed = int(scale_1*pitch)
 	roll_speed = int(scale_1*roll)
 	
-    if (pitch_speed >= 0) or (roll_speed >= 0):
+	if (pitch_speed >= 0) or (roll_speed >= 0):
 		A_forward(pitch_speed)
 		B_forward(roll_speed)
 	else:
