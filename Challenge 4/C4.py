@@ -1,0 +1,129 @@
+import pyb
+import os
+from pyb import Pin, Timer, ADC
+from oled_938 import OLED_938
+from mpu6050 import MPU6050
+
+dance_array = []
+
+#setting up text file reading & array storage
+with open("Data.txt","r") as a:
+    character = a.read(1)
+    text = a.readline()
+    words = text.split()
+	dance_array.append(words[0])
+
+
+A1 = Pin('X3', Pin.OUT_PP)		# Control direction of motor A
+A2 = Pin('X4', Pin.OUT_PP)
+PWMA = Pin('X1')				# Control speed of motor A
+B1 = Pin('X7', Pin.OUT_PP)		# Control direction of motor B
+B2 = Pin('X8', Pin.OUT_PP)
+PWMB = Pin('X2')				# Control speed of motor B
+b_LED = LED(4)					# Blue LED
+
+# Configure timer 2 to produce 1KHz clock for PWM control
+tim = Timer(2, freq = 1000)
+motorA = tim.channel (1, Timer.PWM, pin = PWMA)
+motorB = tim.channel (2, Timer.PWM, pin = PWMB)
+
+# I2C connected to Y9, Y10 (I2C bus 2) and Y11 is reset low active
+i2c = pyb.I2C(2, pyb.I2C.MASTER)
+devid = i2c.scan()				# find the I2C device number
+oled = OLED_938(
+    pinout={"sda": "Y10", "scl": "Y9", "res": "Y8"},
+    height=64, external_vcc=False, i2c_devid=i2c.scan()[0],
+)
+oled.poweron()
+oled.init_display()
+
+def A_forward(value):
+	A1.low()
+	A2.high()
+	motorA.pulse_width_percent(value)
+
+def A_back(value):
+	A2.low()
+	A1.high()
+	motorA.pulse_width_percent(value)
+	
+def A_stop():
+	A1.high()
+	A2.high()
+	
+def B_forward(value):
+	B2.low()
+	B1.high()
+	motorB.pulse_width_percent(value)
+
+def B_back(value):
+	B1.low()
+	B2.high()
+	motorB.pulse_width_percent(value)
+	
+def B_stop():
+	B1.high()
+	B2.high()
+	
+# Initialise variables
+pitch_speed = 0
+roll_speed = 0
+A_speed = 0
+A_count = 0
+B_speed = 0
+B_count = 0
+
+# IMU connected to X9 and X10
+imu = MPU6050(1, False)    	# Use I2C port 1 on Pyboard
+		
+#-------  Section to set up Interrupts ----------
+def isr_motorA(dummy):	# motor A sensor ISR - just count transitions
+	global A_count
+	A_count += 1
+
+def isr_motorB(dummy):	# motor B sensor ISR - just count transitions
+	global B_count
+	B_count += 1
+		
+def isr_speed_timer(dummy): 	# timer interrupt at 100msec intervals
+	global A_count
+	global A_speed
+	global B_count
+	global B_speed
+	A_speed = A_count			# remember count value
+	B_speed = B_count
+	A_count = 0					# reset the count
+	B_count = 0
+	
+# Create external interrupts for motorA Hall Effect Senor
+import micropython
+micropython.alloc_emergency_exception_buf(100)
+from pyb import ExtInt
+
+motorA_int = ExtInt ('Y4', ExtInt.IRQ_RISING, Pin.PULL_NONE,isr_motorA)
+motorB_int = ExtInt ('Y6', ExtInt.IRQ_RISING, Pin.PULL_NONE,isr_motorB)
+
+# Create timer interrupts at 100 msec intervals
+speed_timer = pyb.Timer(4, freq=10)
+speed_timer.callback(isr_speed_timer)
+
+#-------  END of Interrupt Section  ----------
+
+tic = pyb.millis()	
+while True:					
+	toc = pyb.millis()
+	alpha = 0.7    # larger = longer time constant
+
+	A_forward(new_pwm_A)
+	B_forward(new_pwm_B)
+	A_back(abs(new_pwm_A))
+	B_back(abs(new_pwm_B))
+
+	oled.clear()
+	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(dance_array[0]))	
+	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(A_speed/39))	
+	oled.draw_text(0,40,'Motor B rps:{:5.2f}'.format(B_speed/39))	
+	oled.display()
+	
+	pyb.delay(100)
+	tic = pyb.millis()
