@@ -38,8 +38,9 @@ while True:
 	alpha = 0.7    # larger = longer time constant
 
 	oled.clear()
-	oled.draw_text(0,30,str(moves))
+	oled.draw_text(0,30,str(moves[2]))
 	oled.display()
 	
 	pyb.delay(100)
 	tic = pyb.millis()
+	
