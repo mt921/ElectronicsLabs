@@ -4,15 +4,10 @@ from pyb import Pin, Timer, ADC
 from oled_938 import OLED_938
 from mpu6050 import MPU6050
 
-dance_array = []
-
-#setting up text file reading & array storage
-with open("Data.txt","r") as a:
-    character = a.read(1)
-    text = a.readline()
-    words = text.split()
-	dance_array.append(words[0])
-
+dance = []
+f = open("danceydance.txt", "r")
+moves = f.read().split(',')	
+f.close()
 
 A1 = Pin('X3', Pin.OUT_PP)		# Control direction of motor A
 A2 = Pin('X4', Pin.OUT_PP)
@@ -114,16 +109,20 @@ while True:
 	toc = pyb.millis()
 	alpha = 0.7    # larger = longer time constant
 
-	A_forward(new_pwm_A)
-	B_forward(new_pwm_B)
-	A_back(abs(new_pwm_A))
-	B_back(abs(new_pwm_B))
-
-	oled.clear()
-	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(dance_array[0]))	
-	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(A_speed/39))	
-	oled.draw_text(0,40,'Motor B rps:{:5.2f}'.format(B_speed/39))	
-	oled.display()
+    move_number = 0
+    for x in moves:
+        oled.clear()
+	    oled.draw_text(0,30,moves_number)
+        oled.draw_text(0,30,moves[x])
+	    oled.display()
+        if x == '70':
+            A_forward(30) 
+            B_forward(30)
+        if x == '66':
+            A_back(30) 
+            B_back(30)
+        pyb.delay(100)
+        move_number += 1
 	
 	pyb.delay(100)
 	tic = pyb.millis()
