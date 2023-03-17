@@ -133,20 +133,31 @@ speed_timer.callback(isr_speed_timer)
 
 #-------  END of Interrupt Section  ----------
 
+pitch = 0
+
+#pitch angle calculation using complementary filter
+def pitch_estimate(pitch,dt):
+	alpha = 0.7    # larger = longer time constant
+	theta = imu.pitch() #this will be in degrees
+	pitch_dot = imu.get_gy()
+	pitch = alpha*(pitch+pitch_dot*dt)+(1-alpha)*theta
+	return pitch
+
+#discuss what alpha & pitch dot represent
+#try to understand what the formula is doing 
+
 scale_1 = 5/9
 
 tic = pyb.millis()	
 while True:					
 	toc = pyb.millis()
-	alpha = 0.7    # larger = longer time constant
 	pitch = int(imu.pitch())
-	roll = int(imu.roll())
 
-	pitch_speed = int(scale_1*pitch)
+	pitch_speed = int(pitch_estimate(pitch,tic-toc))
 	
-	pidc = PIDC(4.0,0.5,1.0)
-	new_pwm_A = pidc.getPWM(pitch_speed,A_speed)
-	new_pwm_B = pidc.getPWM(pitch_speed,B_speed)
+	pidc = PIDC(4.0,0,0)
+	new_pwm_A = pidc.getPWM(pitch_speed/30,A_speed/39)
+	new_pwm_B = pidc.getPWM(pitch_speed/30,B_speed/39)
 
 	if (pitch_speed >= 0):
 		A_forward(new_pwm_A)
@@ -158,9 +169,10 @@ while True:
 	# Display new speed
 	oled.clear()
 	oled.draw_text(0,10,'Pitch Angle:{:5d}'.format(pitch))
-	oled.draw_text(0,20,'Roll Angle{:5d}'.format(roll))
-	oled.draw_text(0,30,'Motor A rps:{:5.2f}'.format(A_speed/39))	
-	oled.draw_text(0,40,'Motor B rps:{:5.2f}'.format(B_speed/39))	
+	oled.draw_text(0,20,'Motor A rps:{:5.2f}'.format(A_speed/39))	
+	oled.draw_text(0,30,'Motor B rps:{:5.2f}'.format(B_speed/39))	
+	oled.draw_text(0,40, 'PWM:{:5.2f}'.format(new_pwm_A))
+	oled.draw_text(0,50, 'PWM:{:5.2f}'.format(new_pwm_B))
 	oled.display()
 	
 	pyb.delay(100)
