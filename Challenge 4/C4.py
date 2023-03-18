@@ -115,15 +115,29 @@ while True:
 	oled.draw_text(0,30,str(current_move))
 	oled.display()
 	
+    #move forward
 	if current_move == '70':
 		A_forward(30) 
 		B_forward(30)
+    #move back
 	if current_move == '66':
 		A_back(30) 
 		B_back(30)
+    #turn left
+	if current_move == '76':
+		A_forward(20) 
+		B_forward(30)
+    #move right
+	if current_move == '82':
+		A_back(20) 
+		B_back(30)
+    #stop moving
+	if current_move == '83':
+		A_forward(0) 
+		B_forward(0)
 
 
-	pyb.delay(300)
+	pyb.delay(1000)
 	i = i + 1
 	 
 	tic = pyb.millis()
