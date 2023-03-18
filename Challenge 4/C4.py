@@ -109,20 +109,20 @@ while True:
 	toc = pyb.millis()
 	alpha = 0.7    # larger = longer time constant
 
-    	move_number = 0
-    	for x in moves:
-        	oled.clear()
+	moves_number = 0
+	for x in moves:
+		oled.clear()
 		oled.draw_text(0,30,moves_number)
-        	oled.draw_text(0,30,moves[x])
-	    	oled.display()
-        	if x == '70':
-            		A_forward(30) 
-            		B_forward(30)
-        	if x == '66':
-            		A_back(30) 
-            		B_back(30)
-        	pyb.delay(100)
-        	move_number += 1
-	
+		oled.draw_text(0,30,moves[x])
+		oled.display()
+		if x == '70':
+			A_forward(30) 
+			B_forward(30)
+		if x == '66':
+			A_back(30) 
+			B_back(30)
+		moves_number += 1
+		pyb.delay(100)
+    
 	pyb.delay(100)
 	tic = pyb.millis()
