@@ -109,35 +109,50 @@ i = 0
 tic = pyb.millis()	
 while True:					
 	toc = pyb.millis()
-	current_move = moves[i]
 
-	oled.clear()
-	oled.draw_text(0,30,str(current_move))
-	oled.display()
-	
     #move forward
-	if current_move == '70':
+	if moves[i] == '70':
 		A_forward(30) 
 		B_forward(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Moving forward"))
+		oled.display()
     #move back
-	if current_move == '66':
+	if moves[i] == '66':
 		A_back(30) 
 		B_back(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Moving backward"))
+		oled.display()
     #turn left
-	if current_move == '76':
+	if moves[i] == '76':
 		A_forward(20) 
 		B_forward(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Turning left"))
+		oled.display()
     #move right
-	if current_move == '82':
-		A_back(20) 
-		B_back(30)
+	if moves[i] == '82':
+		A_forward(30) 
+		B_forward(20)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Turning right"))
+		oled.display()
     #stop moving
-	if current_move == '83':
+	if moves[i] == '83':
 		A_forward(0) 
 		B_forward(0)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Stop moving"))
+		oled.display()
 
 
-	pyb.delay(1000)
+	pyb.delay(2000)
 	i = i + 1
 	 
 	tic = pyb.millis()
