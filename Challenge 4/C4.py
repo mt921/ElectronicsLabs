@@ -104,25 +104,26 @@ speed_timer.callback(isr_speed_timer)
 
 #-------  END of Interrupt Section  ----------
 
+i = 0
+
 tic = pyb.millis()	
 while True:					
 	toc = pyb.millis()
-	alpha = 0.7    # larger = longer time constant
+	current_move = moves[i]
 
-	moves_number = 0
-	for x in moves:
-		oled.clear()
-		oled.draw_text(0,30,moves_number)
-		oled.draw_text(0,30,moves[x])
-		oled.display()
-		if x == '70':
-			A_forward(30) 
-			B_forward(30)
-		if x == '66':
-			A_back(30) 
-			B_back(30)
-		moves_number += 1
-		pyb.delay(100)
-    
-	pyb.delay(100)
+	oled.clear()
+	oled.draw_text(0,30,str(current_move))
+	oled.display()
+	
+	if current_move == '70':
+		A_forward(30) 
+		B_forward(30)
+	if current_move == '66':
+		A_back(30) 
+		B_back(30)
+
+
+	pyb.delay(300)
+	i = i + 1
+	 
 	tic = pyb.millis()
