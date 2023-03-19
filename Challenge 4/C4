@@ -79,6 +79,8 @@ B_count = 0
 # create neopixel object
 np = NeoPixel(Pin("Y12", Pin.OUT), 8)
 
+move_num = 0
+
 def flash():
     for i in range(8):  # all LEDs dark
         np[i] = (0, 0, 0)
@@ -96,7 +98,7 @@ def flash():
         pyb.delay(50)
 	
     oled.clear()
-    oled.draw_text(0,30,str("Move forward"))
+    oled.draw_text(0,30,str(moves[move_num]))
     oled.display()
     A_forward(30)
     pyb.delay(100)
