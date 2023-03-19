@@ -85,23 +85,64 @@ def flash():
     for i in range(8):  # all LEDs dark
         np[i] = (0, 0, 0)
         np.write()
-        pyb.delay(50)
+        pyb.delay(0)
 
     for i in range(8):  # turn LEDs red one at a time
         np[i] = (64, 0, 0)
         np.write()
-        pyb.delay(10)
+        pyb.delay(0)
 
-    for i in range(8):  # turn all LEDs off
-        np[i] = (0, 0, 0)
-        np.write()
-        pyb.delay(50)
-	
-    oled.clear()
-    oled.draw_text(0,30,str(moves[move_num]))
-    oled.display()
-    A_forward(30)
-    pyb.delay(100)
+    #move forward
+	if moves[move_num] == '70':
+		A_forward(30) 
+		B_forward(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Moving forward"))
+		oled.display()
+    #move back
+	if moves[move_num] == '66':
+		A_back(30) 
+		B_back(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Moving backward"))
+		oled.display()
+    #turn left
+	if moves[move_num] == '76':
+		A_forward(20) 
+		B_forward(30)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Turning left"))
+		oled.display()
+    #move right
+	if moves[move_num] == '82':
+		A_forward(30) 
+		B_forward(20)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Turning right"))
+		oled.display()
+    #stop moving
+	if moves[move_num] == '83':
+		A_forward(0) 
+		B_forward(0)
+		oled.clear()
+		oled.draw_text(0,30,str(moves[i]))
+		oled.draw_text(0,50,str("Stop moving"))
+		oled.display()
+
+	pyb.delay(50)
+	A_forward(0)
+	B_forward(0)
+
+	for i in range(8):  # turn all LEDs off
+        	np[i] = (0, 0, 0)
+        	np.write()
+        	pyb.delay(0)
+		
+    
 
 
 # Create timer interrupt - one every 1/8000 sec or 125 usec
