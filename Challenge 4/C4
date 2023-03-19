@@ -146,5 +146,6 @@ while True:				# Main program loop
 		if (pyb.millis()-tic > MIN_BEAT_PERIOD):	# if longer than minimum period
 			if (c>BEAT_THRESHOLD):		# look for a beat
 				flash()					# beat found, flash blue LED
+				move_num += 1
 				tic = pyb.millis()		# reset tic
 		buffer_full = False				# reset status flag
