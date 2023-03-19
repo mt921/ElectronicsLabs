@@ -5,6 +5,11 @@ from array import array			# need this for memory allocation to buffers
 from oled_938 import OLED_938	# Use OLED display driver
 from audio import MICROPHONE
 
+dance = []
+f = open("danceydance.txt", "r")
+moves = f.read().split(',')	
+f.close()
+
 #  The following two lines are needed by micropython
 #   ... must include if you use interrupt in your program
 import micropython
