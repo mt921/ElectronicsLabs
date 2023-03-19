@@ -10,7 +10,6 @@ B1 = Pin('X7', Pin.OUT_PP)		# Control direction of motor B
 B2 = Pin('X8', Pin.OUT_PP)
 PWMB = Pin('X2')				# Control speed of motor B
 
-
 # Configure timer 2 to produce 1KHz clock for PWM control
 tim = Timer(2, freq = 1000)
 motorA = tim.channel (1, Timer.PWM, pin = PWMA)
@@ -98,6 +97,7 @@ def B_stop():
 	
 # Initialise variables
 pitch = 0
+pitch_dot = 0
 A_speed = 0
 A_count = 0
 B_speed = 0
@@ -137,31 +137,46 @@ motorB_int = ExtInt ('Y6', ExtInt.IRQ_RISING, Pin.PULL_NONE,isr_motorB)
 speed_timer = pyb.Timer(4, freq=10)
 speed_timer.callback(isr_speed_timer)
 
-#-------  END of Interrupt Section  ----------
+#-------
+# -
 
+#pitch angle calculation using complementary filter
+def pitch_estimate(pitch,dt):
+	alpha = 0.7    # larger = longer time constant
+	theta = imu.pitch() #this will be in degrees
+	pitch_dot = imu.get_gy()
+	pitch = alpha*(pitch+pitch_dot*dt)+(1-alpha)*theta
+	return (pitch,pitch_dot)
+
+pitch = 0
+pitch_dot = 0
 scale_1 = 2
 
 tic = pyb.millis()	
 while True:					
 	toc = pyb.millis()
 	alpha = 0.7    # larger = longer time constant
-	pitch = int(imu.pitch())
+	pitch, pitch_dot = pitch_estimate(pitch,toc-tic)
+    
+	pidc = PIDC(4.0,0.5,1.0)
 
 	#pitch_speed = int(scale_1*pitch)
-    # new_pwm_A = pidc.getPWM(pitch_speed,A_speed)
-	# new_pwm_B = pidc.getPWM(pitch_speed,B_speed)
+	new_pwm, direction = pidc.getPWM(0.0,pitch,pitch_dot)
 
-	pidc = PIDC(4.0,0.5,1.0)
-	if pitch > 0:
-		A_back(pitch*scale_1)
-		B_back(pitch*scale_1)
 	if pitch < 0:
-	    	A_forward(abs(pitch)*scale_1)
-        	B_forward(abs(pitch)*scale_1)
-		
-	# Display new speed
+		A_back(abs(new_pwm)*scale_1)
+		B_back(abs(new_pwm)*scale_1)
+	elif pitch > 0:
+		A_forward(abs(new_pwm)*scale_1)
+		B_forward(abs(new_pwm)*scale_1)
+	else:
+		A_stop()
+		B_stop()
+
+	    	
 	oled.clear()
-	oled.draw_text(0,10,'Pitch Angle:{:5d}'.format(pitch))
+	oled.draw_text(0,10,'Pitch Angle:{:5f}'.format(pitch))
+	oled.draw_text(0,20, 'Pitch Dot :{:5f}'.format(pitch_dot))
 	oled.display()
 	
 	pyb.delay(100)
