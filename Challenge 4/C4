@@ -94,26 +94,26 @@ def flash():
 
     #move forward
 	if moves[move_num] == '70':
-		A_forward(30) 
-		B_forward(30)
+		A_forward(50) 
+		B_forward(50)
     #move back
 	if moves[move_num] == '66':
-		A_back(30) 
-		B_back(30)
+		A_back(50) 
+		B_back(50)
     #turn left
 	if moves[move_num] == '76':
 		A_forward(20) 
-		B_forward(30)
+		B_forward(50)
     #move right
 	if moves[move_num] == '82':
-		A_forward(30) 
+		A_forward(50) 
 		B_forward(20)
     #stop moving
 	if moves[move_num] == '83':
 		A_forward(0) 
 		B_forward(0)
 
-	pyb.delay(100)
+	pyb.delay(50)
 	A_forward(0)
 	B_forward(0)
 
